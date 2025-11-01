@@ -1,4 +1,4 @@
-﻿using Livesplit.Subnautica;
+﻿using Livesplit.SubnauticaBelowZero;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

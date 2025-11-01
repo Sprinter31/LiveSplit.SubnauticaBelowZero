@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     public enum GameVersion
     {
-        March2021,
+        Aug2021,
         Sept2022,
         Oct2025,
     }

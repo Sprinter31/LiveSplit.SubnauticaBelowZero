@@ -1,4 +1,4 @@
-﻿namespace Livesplit.Subnautica.Settings
+﻿namespace Livesplit.SubnauticaBelowZero
 {
     partial class SelectSplitType
     {

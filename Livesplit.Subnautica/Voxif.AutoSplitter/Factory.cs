@@ -1,22 +1,23 @@
-﻿using Livesplit.Subnautica;
+﻿using Livesplit.SubnauticaBelowZero;
 using LiveSplit.Model;
 using LiveSplit.UI.Components;
 using System;
 using System.Reflection;
 
-namespace LiveSplit.Subnautica {
+namespace LiveSplit.SubnauticaBelowZero
+{
     public class Factory : IComponentFactory {
-        public string ComponentName => "Subnautica Autosplitter";
+        public string ComponentName => "Subnautica Below Zero Autosplitter";
 
-        public string Description => "Autosplitter for Subnautica";
+        public string Description => "Autosplitter for Subnautica Below zero";
 
         public ComponentCategory Category => ComponentCategory.Control;
 
         public string UpdateName => ComponentName;
 
-        public string XMLURL => UpdateURL + "Components/Subnautica.Updates.xml";
+        public string XMLURL => UpdateURL + "Components/SubnauticaBelowZero.Updates.xml";
 
-        public string UpdateURL => "https://raw.githubusercontent.com/Sprinter31/Subnautica_Autosplitter/LiveSplit.Subnautica-voxif/";
+        public string UpdateURL => "https://raw.githubusercontent.com/Sprinter31/LiveSplit.SubnauticaBelowZero/main/";
 
         public Version Version => ExAssembly.GetName().Version;
 

@@ -1,5 +1,5 @@
 ﻿using LiveSplit.Model;
-using LiveSplit.Subnautica;
+using LiveSplit.SubnauticaBelowZero;
 using LiveSplit.UI.Components;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Voxif.AutoSplitter;
 using Voxif.IO;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     public class SubnauticaComponent : Voxif.AutoSplitter.Component
     {
@@ -47,12 +47,11 @@ namespace Livesplit.Subnautica
             if (memory.startedTimerBefore || !memory.pointersInitialized)
                 return false;
 
-            // options: 100 -> 80 health
-            if (settings.introStart && (GameModeOption)memory.GameMode.New != GameModeOption.Creative)
+            if (settings.introStart && (GameModePresetId)memory.GameMode.New != GameModePresetId.Creative)
             {
-                
+                if (memory.PlayerInputEnabled.New && !memory.PlayerInputEnabled.Old && memory.TimePassed.New > 418 && memory.TimePassed.New < 500) { logger.Log("Start of PlayerInputEnabled"); memory.startedTimerBefore = true; return true; }
             }
-            if (settings.creativeStart && !memory.isLoadingScreen.Current && !memory.isInMainMenu && (GameModeOption)memory.GameMode.New == GameModeOption.Creative)
+            if (settings.creativeStart && !memory.isLoadingScreen.Current && !memory.isInMainMenu && (GameModePresetId)memory.GameMode.New == GameModePresetId.Creative)
             {
                 // Start of Move
                 if ((memory.walkDir.Current != 0 && memory.walkDir.Old == 0) || (memory.strafeDir.Current != 0 && memory.strafeDir.Old == 0)) { logger.Log("Start of Move"); memory.startedTimerBefore = true; return true; }
@@ -141,6 +140,7 @@ namespace Livesplit.Subnautica
                 }
 
                 timerModel.Reset(save);
+                memory.startedTimerBefore = false;
             };
 
             if (ui.InvokeRequired)

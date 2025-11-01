@@ -2,26 +2,19 @@
 using LiveSplit.Model;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
 using System.Windows.Forms;
 using Voxif.AutoSplitter;
 using Voxif.Helpers.Unity;
 using Voxif.IO;
 using Voxif.Memory;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     public class SubnauticaMemory : Memory
     {
-        protected override string[] ProcessNames => new string[] { "Subnautica Zero" };
+        protected override string[] ProcessNames => new string[] { "SubnauticaZero" };
 
         public InventoryItem CurrentItemToCheck { get; set; }
         public Unlockable CurrentBlueprintToCheck { get; set; }
@@ -40,6 +33,8 @@ namespace Livesplit.Subnautica
         private SubnauticaSettings settings;
 
         #region Pointer stuff
+        public Pointer<double> TimePassed;
+        public Pointer<bool> PlayerInputEnabled;
         public Pointer<bool> IsAnimationPlaying;
         public Pointer<bool> RocketLaunching;
         public Pointer<float> Health;
@@ -48,6 +43,7 @@ namespace Livesplit.Subnautica
         public Pointer<IntPtr> pdaMappingPtr;
         public Pointer<int> PDATab;
         public Pointer<int> GameMode;
+        public Pointer<IntPtr> completedGoalsPtr;
         public StringPointer Biome;
 
 
@@ -139,6 +135,8 @@ namespace Livesplit.Subnautica
             isInMainMenu = IsInMainMenu();
             if (isInMainMenu)
                 startedTimerBefore = false;
+            foreach (var g in ReadCompletedGoals())
+                logger.Log("Goal: " + g);
 
             return base.Update();
         }
@@ -151,6 +149,14 @@ namespace Livesplit.Subnautica
             int moduleLen = firstModule.ModuleMemorySize;
             switch (moduleLen)
             {
+                case 671744:
+                    gameVersion = GameVersion.Aug2021;
+                    break;
+
+                case 675840:
+                    gameVersion = GameVersion.Oct2025;
+                    break;
+
                 default:
                     gameVersion = GameVersion.Oct2025;
                     MessageBox.Show($"Module length {moduleLen} does not match a version, defaulting to most recent (October 2025)",
@@ -166,6 +172,13 @@ namespace Livesplit.Subnautica
             this.mono = mono;
             var ptrFactory = new MonoNestedPointerFactory(game, mono);
 
+            #region Intro
+            TimePassed = ptrFactory.Make<double>("DayNightCycle", "main", "timePassedAsDouble");
+            Pointer<IntPtr> playerControllerPtr = ptrFactory.Make<IntPtr>("Player", "main", "<playerController>k__BackingField");
+            //PlayerInputEnabled = ptrFactory.Make<bool>(playerControllerPtr, mono.GetFieldOffset("PlayerController", "inputEnabled"));
+            Pointer<IntPtr> activeControllerPtr = ptrFactory.Make<IntPtr>(playerControllerPtr, mono.GetFieldOffset("PlayerController", "activeController"));
+            PlayerInputEnabled = ptrFactory.Make<bool>(activeControllerPtr, mono.GetFieldOffset("PlayerMotor", "canControl"));
+            #endregion Intro
             #region Is Animation Playing
             IsAnimationPlaying = ptrFactory.Make<bool>("Player", "main", "_cinematicModeActive");
             #endregion Is Animation Playing
@@ -259,9 +272,12 @@ namespace Livesplit.Subnautica
             PDATab = ptrFactory.Make<int>("uGUI_PDA", "<main>k__BackingField", "tabOpen");
             #endregion PDATab
             #region Game Mode
-            GameMode = ptrFactory.Make<int>("GameModeUtils", "currentGameMode");
+            if (gameVersion == GameVersion.Aug2021)
+                GameMode = ptrFactory.Make<int>("GameModeUtils", "currentGameMode");
+            else
+                GameMode = ptrFactory.Make<int>("GameModeManager", "currentPresetId");
             #endregion Game Mode
-
+            completedGoalsPtr = ptrFactory.Make<IntPtr>("Story.StoryGoalManager", "<main>k__BackingField", "completedGoals");
             #region Memory Watchers
             DeepPointer loadingScreenPtr;
             DeepPointer portalLoadingPtr;
@@ -276,7 +292,7 @@ namespace Livesplit.Subnautica
 
             switch (gameVersion)
             {
-                case GameVersion.March2021:
+                case GameVersion.Aug2021:
                     loadingScreenPtr = new DeepPointer("mono.dll", 0x266180, 0x50, 0x2C0, 0x0, 0x30, 0x8, 0x18, 0x20, 0x10, 0x44);
                     portalLoadingPtr = new DeepPointer("Subnautica.exe", 0x142B740, 0x8, 0x10, 0x30, 0x1F8, 0x28, 0x28);
                     hatchPtr = new DeepPointer("fmodstudio.dll", 0x304A30, 0x88, 0x18, 0x158, 0x498, 0x108);
@@ -284,9 +300,9 @@ namespace Livesplit.Subnautica
                     fabiPtr = new DeepPointer("mono.dll", 0x296BC8, 0x20, 0xA58, 0x20);
                     walkDirPtr = new DeepPointer("Subnautica.exe", 0x142B8C8, 0x158, 0x40, 0xA0);
                     strafePtr = new DeepPointer("Subnautica.exe", 0x142B8C8, 0x158, 0x40, 0x160);
-                    posXPtr = new DeepPointer("Subnautica.exe", 0x142B8C8, 0x180, 0x40, 0xA8, 0x7C0);
-                    posYPtr = new DeepPointer("Subnautica.exe", 0x142B8C8, 0x180, 0x40, 0xA8, 0x7C4);
-                    posZPtr = new DeepPointer("Subnautica.exe", 0x142B8C8, 0x180, 0x40, 0xA8, 0x7C8);                   
+                    posXPtr = new DeepPointer("UnityPlayer.dll", 0x17B84D8, 0x150, 0xBF8);
+                    posYPtr = new DeepPointer("UnityPlayer.dll", 0x17B84D8, 0x150, 0xBFC);
+                    posZPtr = new DeepPointer("UnityPlayer.dll", 0x17B84D8, 0x150, 0xC00);                   
                     break;
 
                 default: // GameVersion.Oct2025
@@ -297,9 +313,9 @@ namespace Livesplit.Subnautica
                     fabiPtr = new DeepPointer("UnityPlayer.dll", 0x183BF48, 0x8, 0x10, 0x30, 0x30, 0x28, 0x128);
                     walkDirPtr = new DeepPointer("UnityPlayer.dll", 0x17FBC28, 0x30, 0x98);
                     strafePtr = new DeepPointer("UnityPlayer.dll", 0x17FBC28, 0x30, 0x150);
-                    posXPtr = new DeepPointer("UnityPlayer.dll", 0x1839CE0, 0x28, 0x10, 0x150, 0xA58);
-                    posYPtr = new DeepPointer("UnityPlayer.dll", 0x1839CE0, 0x28, 0x10, 0x150, 0xA5C);
-                    posZPtr = new DeepPointer("UnityPlayer.dll", 0x1839CE0, 0x28, 0x10, 0x150, 0xA60);
+                    posXPtr = new DeepPointer("fmodstudio.dll", 0x2CED70, 0xE0, 0x8, 0x20, 0x48C);
+                    posYPtr = new DeepPointer("fmodstudio.dll", 0x2CED70, 0xE0, 0x8, 0x20, 0x490);
+                    posZPtr = new DeepPointer("fmodstudio.dll", 0x2CED70, 0xE0, 0x8, 0x20, 0x494);
                     break;
             }
 
@@ -352,13 +368,13 @@ namespace Livesplit.Subnautica
             List<TechType> blueprints = new List<TechType>();
             IntPtr startAddr = knowntechPtr.New;
 
-            int slotsOffset = gameVersion == GameVersion.March2021 ? 0x20 : 0x18;
+            int slotsOffset = gameVersion == GameVersion.Aug2021 ? 0x20 : 0x18;
             IntPtr slots = game.Process.ReadPointer(startAddr + slotsOffset);
-            int countOffset = gameVersion == GameVersion.March2021 ? 0x40 : 0x30;
+            int countOffset = gameVersion == GameVersion.Aug2021 ? 0x40 : 0x30;
             int count = game.Process.ReadValue<int>(startAddr + countOffset);
 
             int slotBeginningOffset = 0x20;
-            int slotSize = gameVersion == GameVersion.March2021 ? 0x4 : 0xC;
+            int slotSize = gameVersion == GameVersion.Aug2021 ? 0x4 : 0xC;
             for (int i = 0; i < count; i++)
             {
                 int tech = game.Process.ReadValue<int>(slots + slotBeginningOffset + slotSize * i);
@@ -637,6 +653,78 @@ namespace Livesplit.Subnautica
                                 result.Add(encyEntry);
                     }
                 }
+            }
+
+            return result;
+        }
+
+        private List<string> ReadCompletedGoals()
+        {
+            var result = new List<string>();
+
+            IntPtr hs = completedGoalsPtr.New;
+            if (hs == IntPtr.Zero)
+                return result;
+
+            var unity = (UnityHelperTask.UnityHelperBase)mono;
+            int off_slots = unity.PickSlotsOffset(hs);
+            if (off_slots == 0)
+                return result;
+                              
+
+            IntPtr slotsArr = game.Process.ReadPointer(hs + off_slots);
+            if (slotsArr == IntPtr.Zero)
+                return result;
+
+            int len = game.Process.ReadValue<int>(slotsArr + arr_off_len);
+            if (len <= 0 || len > 200_000)
+                return result;
+
+            IntPtr basePtr = slotsArr + arr_data_base;
+
+            int[] strides = { 16, 24 };
+            int[] valOffs = { 0x08, 0x10 };
+
+            int ptrSize = game.PointerSize;
+            int lenOff = ptrSize * 2;
+            int dataOff = lenOff + 4;
+
+            for (int m = 0; m < strides.Length; m++)
+            {
+                int stride = strides[m];
+                int valueOff = valOffs[m];
+                int found = 0;
+
+                for (int i = 0; i < len; i++)
+                {
+                    IntPtr slot = basePtr + i * stride;
+
+                    int hashCode = game.Process.ReadValue<int>(slot + 0x00);
+                    if (hashCode < 0)
+                        continue;
+
+                    IntPtr strPtr = game.Process.ReadPointer(slot + valueOff);
+                    if (strPtr == IntPtr.Zero)
+                        continue;
+
+                    int sLen = game.Process.ReadValue<int>(strPtr + lenOff);
+                    if (sLen <= 0 || sLen > 4096)
+                        continue;
+
+                    byte[] bytes = Voxif.Memory.ExtensionMethods.ReadBytes(game.Process, strPtr + dataOff, sLen * 2);
+                    if (bytes == null || bytes.Length == 0)
+                        continue;
+
+                    string s = Encoding.Unicode.GetString(bytes);
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        result.Add(s);
+                        found++;
+                    }
+                }
+
+                if (found > 0)
+                    break;
             }
 
             return result;

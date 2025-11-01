@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Livesplit.Subnautica.Settings
+namespace Livesplit.SubnauticaBelowZero
 {
     public partial class SelectSplitType : Form
     {

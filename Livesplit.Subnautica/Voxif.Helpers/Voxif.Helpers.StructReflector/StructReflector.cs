@@ -11,9 +11,9 @@ namespace Voxif.Helpers.StructReflector {
         private static ReflectedList Prepare(string resourcePath, ReflectedList refListSource = null) {
             ReflectedList refListDest = refListSource ?? new ReflectedList();
 
-            Assembly assembly = Assembly.GetExecutingAssembly();            
+            Assembly assembly = Assembly.GetExecutingAssembly();
 
-            using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream("Livesplit.Subnautica.Voxif.Helpers.Voxif.Helpers.Unity." + resourcePath + ".txt"))) {
+            using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream("Livesplit.SubnauticaBelowZero.Voxif.Helpers.Voxif.Helpers.Unity." + resourcePath + ".txt"))) {
 
                 string baseVersion = reader.ReadLine();
                 if(!String.IsNullOrEmpty(baseVersion)) {

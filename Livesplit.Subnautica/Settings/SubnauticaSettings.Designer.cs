@@ -1,4 +1,4 @@
-﻿namespace Livesplit.Subnautica
+﻿namespace Livesplit.SubnauticaBelowZero
 {
     partial class SubnauticaSettings
     {

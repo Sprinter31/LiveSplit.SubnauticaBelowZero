@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     public partial class SubnauticaBlueprintSplit : SubnauticaSplitSetting
     {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Voxif.AutoSplitter;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     // TODO: Add tooltips to the items while in the dropdown menu
     public partial class SubnauticaPrefabSplit : SubnauticaSplitSetting

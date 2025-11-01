@@ -7,8 +7,8 @@
     <ProjectGuid>{2C1210E7-0CE3-450E-95CE-27026BCDE375}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Livesplit.Subnautica</RootNamespace>
-    <AssemblyName>Livesplit.Subnautica</AssemblyName>
+    <RootNamespace>Livesplit.SubnauticaBelowZero</RootNamespace>
+    <AssemblyName>Livesplit.SubnauticaBelowZero</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

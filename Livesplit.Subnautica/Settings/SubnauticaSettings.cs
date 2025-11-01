@@ -1,4 +1,4 @@
-﻿using Livesplit.Subnautica.Settings;
+﻿using Livesplit.SubnauticaBelowZero;
 using LiveSplit.Model;
 using LiveSplit.VoxSplitter;
 using System;
@@ -14,7 +14,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Voxif.AutoSplitter;
 
-namespace Livesplit.Subnautica
+namespace Livesplit.SubnauticaBelowZero
 {
     public partial class SubnauticaSettings : UserControl
     {
